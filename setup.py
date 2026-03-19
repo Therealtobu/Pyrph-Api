@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="Pyrph",
-    version="1.0.0",
+    version="1.0.1",
     description="Python Obfuscation Engine — VM + Native + MBA",
     author="Therealtobu",
     packages=find_packages(),
