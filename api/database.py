@@ -1,45 +1,35 @@
-%%writefile api/database.py
-import os, json
-import firebase_admin
-from firebase_admin import credentials, firestore
+import os
 from datetime import datetime
+from sqlalchemy import create_engine, Column, String, Boolean, DateTime, Integer, Text
+from sqlalchemy.orm import declarative_base, sessionmaker
 
-_cred_json = os.environ.get("FIREBASE_CREDENTIALS", "")
-if _cred_json and not firebase_admin._apps:
-    cred = credentials.Certificate(json.loads(_cred_json))
-    firebase_admin.initialize_app(cred)
-
-db = firestore.client()
-KEYS_COL = "keys"
-
-
-def get_key(key_string: str):
-    doc = db.collection(KEYS_COL).document(key_string).get()
-    return doc.to_dict() if doc.exists else None
+DB_PATH = os.environ.get("DB_PATH", "pyrph.db")
+engine  = create_engine(f"sqlite:///{DB_PATH}", connect_args={"check_same_thread": False})
+Base    = declarative_base()
+Session = sessionmaker(bind=engine)
 
 
-def save_key(data: dict):
-    db.collection(KEYS_COL).document(data["key_string"]).set(data)
-
-
-def update_key(key_string: str, updates: dict):
-    db.collection(KEYS_COL).document(key_string).update(updates)
-
-
-def list_keys(limit=300):
-    docs = db.collection(KEYS_COL).order_by(
-        "created_at", direction=firestore.Query.DESCENDING
-    ).limit(limit).stream()
-    return [d.to_dict() for d in docs]
-
-
-def count_keys(filters: dict = None):
-    q = db.collection(KEYS_COL)
-    if filters:
-        for k, v in filters.items():
-            q = q.where(k, "==", v)
-    return sum(1 for _ in q.stream())
+class Key(Base):
+    __tablename__ = "keys"
+    id         = Column(Integer, primary_key=True, autoincrement=True)
+    key_string = Column(String(64), unique=True, nullable=False, index=True)
+    hwid       = Column(String(128), nullable=True, index=True)
+    tier       = Column(String(16), default="free")
+    is_active  = Column(Boolean, default=True)
+    is_used    = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    expires_at = Column(DateTime, nullable=True)
+    note       = Column(Text, nullable=True)
+    used_count = Column(Integer, default=0)
 
 
 def init_db():
-    pass  # Firebase không cần init tables
+    Base.metadata.create_all(engine)
+
+
+def get_db():
+    db = Session()
+    try:
+        yield db
+    finally:
+        db.close()
