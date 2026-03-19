@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="pyrph-obf-skibidi",
+    name="Python Runtime Protection Hardening (Pyrph)",
     version="1.0.0",
     description="Python Obfuscation Engine — VM + Native + MBA",
     author="Therealtobu",
