@@ -1,0 +1,1 @@
+recursive-include pyrph/native *.c *.h
