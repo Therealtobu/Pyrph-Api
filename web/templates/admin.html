@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin — Pyrph</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#000;--bg1:#0a0a0a;--bg2:#111;--bg3:#1c1c1e;--text:#f5f5f7;--text2:#a1a1a6;--text3:#636366;--accent:#0a84ff;--green:#30d158;--red:#ff453a;--orange:#ff9f0a;--border:rgba(255,255,255,0.07)}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
+/* Login */
+#login{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+.lcard{background:var(--bg1);border:1px solid var(--border);border-radius:20px;padding:40px;width:100%;max-width:360px;text-align:center}
+.lcard h2{font-size:22px;font-weight:700;margin-bottom:8px}
+.lcard p{color:var(--text2);font-size:13px;margin-bottom:24px}
+input,select,textarea{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:13px;outline:none;transition:border-color .2s;width:100%;margin-bottom:10px}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+select{cursor:pointer}
+.btn{padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-blue{background:var(--accent);color:#fff;width:100%}
+.btn-green{background:rgba(48,209,88,.15);color:var(--green);border:1px solid rgba(48,209,88,.2)}
+.btn-red{background:rgba(255,69,58,.1);color:var(--red);border:1px solid rgba(255,69,58,.18)}
+.btn-orange{background:rgba(255,159,10,.1);color:var(--orange);border:1px solid rgba(255,159,10,.18)}
+.btn-sm{padding:6px 12px;font-size:11px}
+/* Main */
+#main{display:none}
+header{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:rgba(0,0,0,.85);backdrop-filter:blur(20px);z-index:10}
+.hlogo{font-size:16px;font-weight:800;color:var(--accent)}
+.hright{display:flex;align-items:center;gap:10px}
+.abadge{font-size:10px;background:rgba(255,159,10,.12);color:var(--orange);border:1px solid rgba(255,159,10,.2);padding:3px 10px;border-radius:20px;font-weight:700}
+body > #main > main{padding:20px;max-width:1300px;margin:0 auto}
+/* Stats */
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px}
+.scard{background:var(--bg1);border:1px solid var(--border);border-radius:12px;padding:18px;text-align:center}
+.sval{font-size:30px;font-weight:800;letter-spacing:-1px;margin-bottom:3px}
+.slbl{font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.07em}
+/* Panel */
+.panel{background:var(--bg1);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:18px}
+.ph{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.phttl{font-size:13px;font-weight:700}
+.pb{padding:18px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.row input,.row select{margin:0;flex:1;min-width:140px}
+/* Table */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:9px 13px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)}
+td{padding:9px 13px;border-bottom:1px solid rgba(255,255,255,.03);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.015)}
+.badge{display:inline-block;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:700}
+.bfree{background:rgba(10,132,255,.12);color:var(--accent)}
+.bpaid{background:rgba(48,209,88,.12);color:var(--green)}
+.brev{background:rgba(255,69,58,.1);color:var(--red)}
+.nkbox{background:rgba(48,209,88,.06);border:1px solid rgba(48,209,88,.18);border-radius:10px;padding:14px;font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--green);display:none;margin-top:12px;word-break:break-all;text-align:center}
+.msg{font-size:12px;margin-top:10px;padding:8px 12px;border-radius:7px;display:none}
+.msg.ok{background:rgba(48,209,88,.07);color:var(--green);border:1px solid rgba(48,209,88,.15)}
+.msg.err{background:rgba(255,69,58,.07);color:var(--red);border:1px solid rgba(255,69,58,.15)}
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="login">
+  <div class="lcard">
+    <h2>🔐 Admin Panel</h2>
+    <p>Enter admin secret to continue</p>
+    <input type="password" id="tok" placeholder="Admin secret..." onkeydown="if(event.key==='Enter')login()">
+    <button class="btn btn-blue" onclick="login()">Login</button>
+    <div id="lerr" style="color:var(--red);font-size:12px;margin-top:10px;display:none">Wrong token.</div>
+  </div>
+</div>
+
+<!-- Main -->
+<div id="main">
+  <header>
+    <div class="hlogo">Pyrph Admin</div>
+    <div class="hright">
+      <span class="abadge">ADMIN</span>
+      <button class="btn btn-sm" onclick="logout()" style="background:var(--bg3);color:var(--text2);border:1px solid var(--border)">Logout</button>
+    </div>
+  </header>
+  <main>
+    <!-- Stats -->
+    <div class="sgrid">
+      <div class="scard"><div class="sval" id="st">—</div><div class="slbl">Total Keys</div></div>
+      <div class="scard"><div class="sval" id="sa">—</div><div class="slbl">Active</div></div>
+      <div class="scard"><div class="sval" id="sf" style="color:var(--accent)">—</div><div class="slbl">Free</div></div>
+      <div class="scard"><div class="sval" id="sp" style="color:var(--green)">—</div><div class="slbl">Paid</div></div>
+      <div class="scard"><div class="sval" id="su">—</div><div class="slbl">Total Uses</div></div>
+    </div>
+
+    <!-- Generate Key -->
+    <div class="panel">
+      <div class="ph"><div class="phttl">Generate Key</div></div>
+      <div class="pb">
+        <div class="row">
+          <select id="gtier"><option value="paid">Paid — Lifetime</option><option value="free">Free — 24h</option></select>
+          <input id="gnote" placeholder="Note (optional)" style="margin:0">
+          <button class="btn btn-green" onclick="genKey()">Generate</button>
+        </div>
+        <div class="nkbox" id="nkbox"></div>
+      </div>
+    </div>
+
+    <!-- Activate Paid Key for HWID -->
+    <div class="panel">
+      <div class="ph"><div class="phttl">Activate Paid Key → HWID</div></div>
+      <div class="pb">
+        <p style="font-size:12px;color:var(--text3);margin-bottom:12px">When user pays, enter their HWID (from tool output) and the key to bind them together.</p>
+        <div class="row">
+          <input id="ahwid" placeholder="User HWID (full hash)" style="margin:0">
+          <input id="akey"  placeholder="PRP-XXXXX-XXXXX-XXXXX-XXXXX" style="margin:0">
+          <button class="btn btn-green" onclick="activateKey()">Activate</button>
+        </div>
+        <div class="msg" id="amsg"></div>
+      </div>
+    </div>
+
+    <!-- Reset HWID -->
+    <div class="panel">
+      <div class="ph"><div class="phttl">Reset HWID</div></div>
+      <div class="pb">
+        <p style="font-size:12px;color:var(--text3);margin-bottom:12px">Unbind a key so the user can activate it on a new machine.</p>
+        <div class="row">
+          <input id="rkey" placeholder="Key to reset" style="margin:0">
+          <button class="btn btn-orange" onclick="resetHwid()">Reset HWID</button>
+        </div>
+        <div class="msg" id="rmsg"></div>
+      </div>
+    </div>
+
+    <!-- Revoke Key -->
+    <div class="panel">
+      <div class="ph"><div class="phttl">Revoke Key</div></div>
+      <div class="pb">
+        <div class="row">
+          <input id="vkey" placeholder="Key to revoke" style="margin:0">
+          <button class="btn btn-red" onclick="revokeKey()">Revoke</button>
+        </div>
+        <div class="msg" id="vmsg"></div>
+      </div>
+    </div>
+
+    <!-- Keys Table -->
+    <div class="panel">
+      <div class="ph">
+        <div class="phttl">All Keys</div>
+        <button class="btn btn-sm btn-green" onclick="loadKeys()">Refresh</button>
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Key</th><th>Tier</th><th>HWID</th><th>Active</th><th>Used</th><th>Uses</th><th>Expires</th><th>Note</th><th>Actions</th></tr></thead>
+          <tbody id="ktbody"><tr><td colspan="9" style="text-align:center;color:var(--text3);padding:24px">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+let T='';
+
+async function login(){
+  T=document.getElementById('tok').value.trim();
+  const r=await fetch(`/api/admin/stats?token=${encodeURIComponent(T)}`);
+  if(r.ok){
+    document.getElementById('login').style.display='none';
+    document.getElementById('main').style.display='block';
+    loadStats(); loadKeys();
+  } else {
+    document.getElementById('lerr').style.display='block';
+  }
+}
+
+function logout(){T='';document.getElementById('login').style.display='flex';document.getElementById('main').style.display='none';}
+
+async function loadStats(){
+  const d=(await (await fetch(`/api/admin/stats?token=${encodeURIComponent(T)}`)).json());
+  document.getElementById('st').textContent=d.total_keys;
+  document.getElementById('sa').textContent=d.active_keys;
+  document.getElementById('sf').textContent=d.free_keys;
+  document.getElementById('sp').textContent=d.paid_keys;
+  document.getElementById('su').textContent=d.total_uses;
+}
+
+async function loadKeys(){
+  const d=(await (await fetch(`/api/admin/keys?token=${encodeURIComponent(T)}`)).json());
+  const tb=document.getElementById('ktbody');
+  if(!d.keys?.length){tb.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--text3);padding:24px">No keys.</td></tr>';return;}
+  tb.innerHTML=d.keys.map(k=>`
+    <tr>
+      <td>${k.key}</td>
+      <td><span class="badge ${k.tier==='paid'?'bpaid':'bfree'}">${k.tier}</span></td>
+      <td title="${k.hwid_full||''}">${k.hwid||'—'}</td>
+      <td style="color:${k.active?'var(--green)':'var(--red)'}">${k.active?'✓':'✗'}</td>
+      <td style="color:${k.used?'var(--text3)':'var(--text2)'}">${k.tier==='free'?(k.used?'used':'unused'):'—'}</td>
+      <td>${k.uses}</td>
+      <td style="font-size:10px">${k.expires==='lifetime'?'∞':new Date(k.expires+'Z').toLocaleDateString()}</td>
+      <td style="font-size:10px;color:var(--text3)">${k.note||''}</td>
+      <td style="display:flex;gap:6px;flex-wrap:wrap">
+        ${k.active?`<button class="btn btn-sm btn-orange" onclick="qReset('${k.key}')">Reset</button>
+        <button class="btn btn-sm btn-red" onclick="qRevoke('${k.key}')">Revoke</button>`:''}
+      </td>
+    </tr>`).join('');
+}
+
+async function genKey(){
+  const tier=document.getElementById('gtier').value;
+  const note=document.getElementById('gnote').value.trim();
+  const d=await(await fetch('/api/admin/genkey',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:T,tier,note})})).json();
+  const box=document.getElementById('nkbox');
+  box.textContent=d.key+(d.expires_at!=='lifetime'?'\nExpires: '+d.expires_at:'\nLifetime · Bind HWID via Activate');
+  box.style.display='block';
+  loadStats(); loadKeys();
+}
+
+async function activateKey(){
+  const hwid=document.getElementById('ahwid').value.trim();
+  const key=document.getElementById('akey').value.trim();
+  const d=await(await fetch('/api/admin/activate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:T,hwid,key})})).json();
+  showMsg('amsg',d.ok,d.message||d.detail);
+  loadKeys();
+}
+
+async function resetHwid(){
+  const key=document.getElementById('rkey').value.trim();
+  const d=await(await fetch('/api/admin/reset_hwid',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:T,key})})).json();
+  showMsg('rmsg',d.ok,d.message||d.detail);
+  loadKeys();
+}
+
+async function revokeKey(){
+  const key=document.getElementById('vkey').value.trim();
+  const d=await(await fetch('/api/admin/revoke',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:T,key})})).json();
+  showMsg('vmsg',d.ok,d.message||d.detail);
+  loadStats(); loadKeys();
+}
+
+async function qReset(key){document.getElementById('rkey').value=key;resetHwid();}
+async function qRevoke(key){document.getElementById('vkey').value=key;revokeKey();}
+
+function showMsg(id,ok,txt){
+  const el=document.getElementById(id);
+  el.textContent=txt; el.className='msg '+(ok?'ok':'err');
+  el.style.display='block';
+  setTimeout(()=>el.style.display='none',4000);
+}
+</script>
+</body>
+</html>
