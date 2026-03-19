@@ -17,7 +17,7 @@ except ImportError:
 
 from .hwid import get_hwid
 
-API_BASE   = os.environ.get("PYRPH_API", "https://pyrph-api.up.railway.app")
+API_BASE   = os.environ.get("PYRPH_API", "pyrph-api-production.up.railway.app")
 CONFIG_DIR = Path.home() / ".pyrph"
 KEY_FILE   = CONFIG_DIR / "key.txt"
 CACHE_FILE = CONFIG_DIR / "cache.json"
